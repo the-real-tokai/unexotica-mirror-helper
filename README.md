@@ -38,7 +38,7 @@ python3 fetchunexotica.py --destination=/Volumes/MyMirrors/UnExoticA-Mirror
 
 # (optionally) remove archives afterwards, if not needed
 # (will make updating the mirror impossible though or tricky at least)
-find /Volumes/MyMirrors/UnExoticA-Mirror -iname 'archive.lha' -print -delete
+find /Volumes/MyMirrors/UnExoticA-Mirror -name 'archive.lha' -print -delete
 ````
 
 ```
@@ -82,4 +82,6 @@ https://github.com/the-real-tokai/unexotica-mirror-helper/issues
 * improve update synchronization to collect new changes from the remote wiki into an existing mirror, e.g.
   handle updating existing archives/ box artworks, if needed, or skip scheduling them entirely, if there
   was no change on the wiki. Currently this isn't handled well or at all (see comments in the code.)
-  
+* a pretty index.html (or info.html or similar) per game with the meta data and cover artwork (the
+  `wikidata.txt` files are a bit hard to read as it is, but may contain useful extra details that would be lost
+  otherwise)
