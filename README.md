@@ -10,8 +10,8 @@
 `fetchunexotica.py` is a crude Python script to create a local and streamlined mirror of the UnExoticA Amiga games module
 collection available at https://www.exotica.org.uk/wiki/UnExoticA. The script will fetch all game soundtrack archives and
 their box artworks: one game per directory, sorted into alphabetical parent directories (e.g. `z/Zool/*` or `a/Ambermoon/*`,
-etc.). Responsibility it tries to be gentle on Exotica's server and limit requested data/ amount of requests (it's still a
-whole bunch of requests for almost ~3,000 game soundtracks, of course.)
+etc.). Responsibly it tries to be as gentle as possible on Exotica's server and limit requested data/ amount of requests to
+a minimum (it's still a whole bunch of requests for almost ~3,000 game soundtracks, of course.)
 
 A full sync takes between 20 minutes and 40 minutes and needs ~4 GiB of free disk space currently (27-Sep-2024). A mirror
 without the CDDA rips and stripped archive files will need around ~660 MiB (around 2 GiB needed during the process.)
