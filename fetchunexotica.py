@@ -20,7 +20,7 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-	$Id: fetchunexotica.py 24 2024-09-27 19:23:15Z tokai $
+	$Id: fetchunexotica.py 25 2024-09-28 09:16:00Z tokai $
 """
 
 import urllib
@@ -61,7 +61,7 @@ except ImportError:
 
 
 __author__  = 'Christian Rosentreter'
-__version__ = '1.2'
+__version__ = '1.3'
 __all__     = []
 
 
@@ -173,7 +173,7 @@ class Archive():
 				# TODO: limit this to OS X
 				subprocess.run(["/usr/local/bin/tag", "-a", "Red", self.basedir], check=False)
 			except:  # pylint: disable=bare-except
-				pass # ignore all subprocess errors
+				pass  # ignore all subprocess errors
 
 
 
@@ -184,11 +184,24 @@ class BoxScan():
 	url_format = 'https://www.exotica.org.uk/wiki/Special:Redirect/file/{}'
 
 	def __init__(self, filelink, destination_directory):
-		self.url = self.url_format.format(urllib.parse.quote_plus(filelink))
+		self.url = self.url_format.format(urllib.parse.quote(filelink))
 		suffix   = '.unknown'
 		if filelink[-4:] in ['.png', '.jpg']:
 			suffix = filelink[-4:]
 		self.filename = os.path.join(destination_directory, 'Cover' + suffix)
+		self.suffix = suffix
+		
+	def optimize(self):
+		if not self.suffix == '.jpg':
+			return
+		print("\033[37m>>>> +++ Optimizing", self.filename, "\033[0m")
+		try:
+			# TODO: switching to MozJpeg may be more effective
+			subprocess.run(["jpegoptim", "--totals", "--preserve", "--preserve-perms", "--strip-all", self.filename], check=True)
+		except subprocess.CalledProcessError as e:
+			print("\033[31mCouldn't optimize box scan <{}>.\033[0m".format(self.filename), e, file=sys.stderr)
+		except:  # pylint: disable=bare-except
+			pass  # ignore all remaining subprocess errors
 
 
 
@@ -221,7 +234,8 @@ def main():
 	session.headers.update({
 		'User-Agent': 'UnExoticA Mirror Helper/{} +https://github.com/the-real-tokai/unexotica-mirror-helper'.format(__version__)
 	})
-
+	assert_status_hook = lambda response, *args, **kwargs: response.raise_for_status()
+	session.hooks["response"] = [assert_status_hook]
 
 
 	# ------------------------------------------------------------------------------------------------
@@ -379,6 +393,8 @@ def main():
 			print(">>>> Saving to", bs.filename)
 			with open(bs.filename, 'wb') as f:
 				f.write(r.content)
+
+			bs.optimize()				
 
 		except requests.exceptions.RequestException as e:
 			print("\033[31mCouldn't download box scan <{}>.\033[0m".format(bs.url), e, file=sys.stderr)

@@ -29,6 +29,7 @@ Python 3.9.
 * Python module `lhafile` (https://pypi.org/project/lhafile/) for smart automatic unarchiving of the downloaded archives (recommended!)
 * `Tag` command (https://github.com/jdberry/tag/) used to mark problematic directories/ games. Only
 the broken "Pinball Fantasies" LhA archive triggers it currently. (OS X/ macOS only; not really needed)
+* `jpegoptim` command (https://github.com/tjko/jpegoptim) for optimizing box scans.
 
 
 ## Usage
@@ -67,6 +68,15 @@ https://github.com/the-real-tokai/unexotica-mirror-helper/issues
 ## History
 
 <table>
+    <tr>
+        <td valign=top>1.3</td>
+        <td valign=top nowrap>28-Sep-2024</td>
+        <td>
+			Fix: due to improper URL quoting a few of the box scans were not downloaded<br>
+		    Fix: better handling of HTTP errors<br>
+			New: use `jpegoptim` to shrink down box scans after download
+	    </td>
+    </tr>
     <tr>
         <td valign=top>1.2</td>
         <td valign=top nowrap>27-Sep-2024</td>
