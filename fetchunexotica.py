@@ -2,8 +2,8 @@
 
 """
 	fetchunexotica.py
-	Creates a clean personal mirror of UnExoticA's Amiga module
-	collection.
+	Creates a clean personal mirror of UnExoticA's Amiga Module
+	Collection.
 
 	Copyright © 2024 Christian Rosentreter
 
@@ -39,7 +39,7 @@ except ImportError:
 	sys.path.append(os.path.join(sysconfig.get_paths()["purelib"], 'pip', '_vendor'))
 	import requests
 
-# Optional LhAarchive unpacking support.
+# Optional LhA archive unpacking support.
 #
 # See:
 #	https://pypi.org/project/lhafile/
@@ -149,7 +149,7 @@ class Archive():
 				outfilename = os.path.join(self.basedir, convert)
 				#print("Orig:", filename, "Converted:", convert, "Output:", outpath, outfilename)
 
-				# TODO: Does that work reliably, I have no idea.
+				# TODO: Does that work reliably? I have no idea.
 				#
 				# Note: Needs at least Python 3.9. It's a string based comparision, see:
 				#       https://docs.python.org/3/library/pathlib.html#pathlib.PurePath.is_relative_to
@@ -168,12 +168,12 @@ class Archive():
 
 		except lhafile.lhafile.BadLhafile as e:
 			print("\033[31mERROR: <{}> has an issue:\033[0m".format(self.filename), e, file=sys.stderr)
-			try:
-				# try to add a 'Red' tag, so it's clear later in Finder that something went wrong with it.
-				# TODO: limit this to OS X
-				subprocess.run(["/usr/local/bin/tag", "-a", "Red", self.basedir], check=False)
-			except:  # pylint: disable=bare-except
-				pass  # ignore all subprocess errors
+			if sys.platform.lower() == 'darwin':
+				try:
+					# Try to add a 'Red' tag, so it's clear later in Finder that something went wrong with it.
+					subprocess.run(["/usr/local/bin/tag", "-a", "Red", self.basedir], check=False)
+				except:  # pylint: disable=bare-except
+					pass  # ignore all subprocess errors
 
 
 
@@ -409,7 +409,7 @@ def main():
 			with open(bs.filename, 'wb') as f:
 				f.write(r.content)
 
-			bs.optimize()			
+			bs.optimize()
 
 		except requests.exceptions.RequestException as e:
 			print("\033[31mCouldn't download box scan <{}>.\033[0m".format(bs.url), e, file=sys.stderr)
