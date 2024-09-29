@@ -190,9 +190,10 @@ class BoxScan():
 			suffix = filelink[-4:]
 		self.filename = os.path.join(destination_directory, 'Cover' + suffix)
 		self.suffix = suffix
-		
+
 	def optimize(self):
-		if not self.suffix == '.jpg':
+		""" Tries to shrink file sizes of downloaded JPEG/JFIF files. """
+		if self.suffix != '.jpg':
 			return
 		print("\033[37m>>>> +++ Optimizing", self.filename, "\033[0m")
 		try:
@@ -234,7 +235,7 @@ def main():
 	session.headers.update({
 		'User-Agent': 'UnExoticA Mirror Helper/{} +https://github.com/the-real-tokai/unexotica-mirror-helper'.format(__version__)
 	})
-	assert_status_hook = lambda response, *args, **kwargs: response.raise_for_status()
+	assert_status_hook = lambda response, *args, **kwargs: response.raise_for_status()  # pylint: disable=unnecessary-lambda-assignment
 	session.hooks["response"] = [assert_status_hook]
 
 
@@ -264,11 +265,25 @@ def main():
 
 	print("Following titles matched the filter:", titles)
 
-	# ################################################### #
-	# COMMENT/UNCOMMENT ME BEFORE/AFTER TESTING
-	# ################################################### #
-	# titles = titles[0:10]  # limit to 10 entries for testing purposes
-	# ################################################### #
+
+	# ############################################################################################# #
+	# DEFAULT BLOCKAGE                                                                              #
+	# ############################################################################################# #
+	#
+	# Note: This limits things to max. 10 entries by default. Disabling this check (`if 0:`) or
+	#       using an alternative regular expression (e.g. `.*`) will workaround this. But BEFORE you
+	#       do this MAKE SURE you understand the implications to the service. It is best to contact
+	#       folks on exotica.co.uk first BEFORE doing any full mirroring. Ideally someone else
+	#       already made a mirror and shares it via BitTorrent and you'll not have to parasite any
+	#       server ressources unnecessarily. Be considerate!
+	#
+	#       e.g.:
+	#       <insert magnet link(s) here>
+	#
+	if 1:  # pylint: disable=using-constant-test
+		if user_input.filter == '.':
+			titles = titles[0:10]  # limit to 10 entries.
+	# ############################################################################################## #
 
 
 
@@ -394,7 +409,7 @@ def main():
 			with open(bs.filename, 'wb') as f:
 				f.write(r.content)
 
-			bs.optimize()				
+			bs.optimize()			
 
 		except requests.exceptions.RequestException as e:
 			print("\033[31mCouldn't download box scan <{}>.\033[0m".format(bs.url), e, file=sys.stderr)
