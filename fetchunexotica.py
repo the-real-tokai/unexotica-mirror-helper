@@ -2,8 +2,8 @@
 
 """
 	fetchunexotica.py
-	Creates a clean personal mirror of UnExoticA's Amiga Module
-	Collection.
+	Creates a clean personal mirror of UnExoticA's Amiga Game Music
+	Module Collection.
 
 	Copyright © 2024 Christian Rosentreter
 
@@ -20,7 +20,7 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-	$Id: fetchunexotica.py 25 2024-09-28 09:16:00Z tokai $
+	$Id: fetchunexotica.py 27 2024-09-29 21:59:22Z tokai $
 """
 
 import urllib
@@ -61,7 +61,7 @@ except ImportError:
 
 
 __author__  = 'Christian Rosentreter'
-__version__ = '1.3'
+__version__ = '1.4'
 __all__     = []
 
 
@@ -108,8 +108,26 @@ class Archive():
 
 	def __init__(self, filelink, destination_directory):
 		self.url      = self.url_format.format(urllib.parse.urlencode({'file': 'exotica/' + filelink}))
-		self.basedir  = destination_directory
+		self.basedir  = pathlib.Path(destination_directory).resolve()  # resolve it into an absolute path
 		self.filename = os.path.join(destination_directory, 'archive.lha')
+
+	def is_relative_to_basedir(self, verify_path):
+		""" Verifies that `verify_path` is relative to destination and not somewhere else on the disk. """
+
+		# TODO: Does this whole check work reliably? I have no idea.
+		#
+		# Note: We need at least Python 3.9. `.is_relative_to()` is a string based comparision, see:
+		#       https://docs.python.org/3/library/pathlib.html#pathlib.PurePath.is_relative_to
+		#
+		tmp = pathlib.Path(verify_path).resolve()  # should make it absolute
+		try:
+			# Note: Yikes, my pylint still runs with 3.7 not 3.9++, so it triggers an error we need to silence
+			if tmp.is_relative_to(self.basedir):  # pylint: disable=no-member
+				return True
+		except AttributeError:
+			if str(tmp).startswith(str(self.basedir)):  # for Python versions older than 3.9, feels pretty equivalent.
+				return True
+		return False
 
 	def extract(self):
 		""" Extracts all files from the archive. """
@@ -135,9 +153,6 @@ class Archive():
 					break
 			print(">>>> strip base:", strip_base, "->", common_base)
 
-
-			absdest = pathlib.Path(self.basedir).resolve()
-
 			for filename in files:
 				convert = pathlib.Path(pathlib.PureWindowsPath(filename).as_posix())
 
@@ -145,18 +160,12 @@ class Archive():
 				if strip_base and convert.parts[0] == common_base:
 					convert = pathlib.Path(*convert.parts[1:])
 
-				outpath     = os.path.join(self.basedir, os.path.dirname(convert))
-				outfilename = os.path.join(self.basedir, convert)
+				outpath     = pathlib.Path(os.path.join(self.basedir, os.path.dirname(convert))).resolve()
+				outfilename = pathlib.Path(os.path.join(self.basedir, convert)).resolve()
 				#print("Orig:", filename, "Converted:", convert, "Output:", outpath, outfilename)
 
-				# TODO: Does that work reliably? I have no idea.
-				#
-				# Note: Needs at least Python 3.9. It's a string based comparision, see:
-				#       https://docs.python.org/3/library/pathlib.html#pathlib.PurePath.is_relative_to
-				tmp = pathlib.Path(outfilename).resolve()  # should make it absolute
-				# Yikes, my pylint still runs with 3.7 not 3.9++, so it triggers an error
-				if not tmp.is_relative_to(absdest):  # pylint: disable=no-member
-					print("\033[31mERROR: <{}> not in our target directory <{}>, potential path traversal attack or broken archive. \033[0m".format(tmp, absdest), file=sys.stderr)
+				if not self.is_relative_to_basedir(outfilename):
+					print("\033[31mERROR: <{}> is not in our target directory <{}>, potential path traversal attack or broken archive. \033[0m".format(outfilename, self.basedir), file=sys.stderr)
 					return  # sys.exit(20)
 
 				if len(convert.parts) > 1:
@@ -210,7 +219,7 @@ def main():
 	""" Rock'n'Roll'n'Amiga! """
 
 	ap = argparse.ArgumentParser(
-		description=('Creates a clean mirror of UnExoticA.'),
+		description=('Creates a clean mirror of UnExoticA\'s Amiga Game Music Module Collection.'),
 		epilog='Report bugs, request features, or provide suggestions via https://github.com/the-real-tokai/unexotica-mirror-helper/issues',
 		add_help=False,
 	)
@@ -266,22 +275,23 @@ def main():
 	print("Following titles matched the filter:", titles)
 
 
-	# ############################################################################################# #
-	# DEFAULT BLOCKAGE                                                                              #
-	# ############################################################################################# #
+	# ############################################################################################## #
+	# ++++++ DEFAULT BLOCKAGE ++++++                                                                 #
+	# ############################################################################################## #
 	#
-	# Note: This limits things to max. 10 entries by default. Disabling this check (`if 0:`) or
-	#       using an alternative regular expression (e.g. `.*`) will workaround this. But BEFORE you
-	#       do this MAKE SURE you understand the implications to the service. It is best to contact
-	#       folks on exotica.co.uk first BEFORE doing any full mirroring. Ideally someone else
-	#       already made a mirror and shares it via BitTorrent and you'll not have to parasite any
-	#       server ressources unnecessarily. Be considerate!
+	#  Note: This limits things to a max. of 10 entries by default.  Disabling this check (`if 0:`) or
+	#        using an alternative regular expression (e.g. `.*`) will workaround this.  But BEFORE you
+	#        do this *MAKE SURE* you understand the implications to the service. It is best to contact
+	#        the maintainers of "exotica.co.uk" first BEFORE doing any full mirroring. Ideally someone
+	#        else already made a mirror and shares it via BitTorrent and you will not have to parasite
+	#        any server ressources unnecessarily. Be considerate!
 	#
-	#       e.g.:
-	#       <insert magnet link(s) here>
+	#        e.g.:
+	#        <insert magnet link(s) here>
 	#
 	if 1:  # pylint: disable=using-constant-test
 		if user_input.filter == '.':
+			print("\033[35m++++ Limiting to 10 entries. This will not be a full mirror! ++++\033[0m")
 			titles = titles[0:10]  # limit to 10 entries.
 	# ############################################################################################## #
 
@@ -373,7 +383,7 @@ def main():
 			if (data[2] != 0x2d or  # -
 			    data[3] != 0x6c or  # l
 			    data[4] != 0x68 or  # h
-				# skip data[5]
+			    # skip data[5]
 			    data[6] != 0x2d):   # -
 				raise ValueError('Not an lha archive.')
 
