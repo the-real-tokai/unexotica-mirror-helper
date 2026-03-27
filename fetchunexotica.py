@@ -5,7 +5,7 @@
 	Creates a clean personal mirror of UnExoticA's Amiga Game Music
 	Module Collection.
 
-	Copyright © 2024 Christian Rosentreter
+	Copyright © 2024-2026 Christian Rosentreter
 
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
